@@ -48,10 +48,41 @@
     // Initialize Firebase
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
+    // Read the data from the database and update the list
+    $('li').remove();
+    
+    db.collection("shoppinglist").get().then((querySnapshot)=>{
+      console.log(querySnapshot)
+      let newlist = "";
+      querySnapshot.forEach((doc)=>{
+        let item = doc.data().item;
+        console.log("Loading... ",item);
+        newlist += "<li class='cool'>"+item+"</li>";
+        //$("#todo").append("<li>"+item+"</li>");
+      })
+      // update the list
+      $("#todo").append(newlist);
+      //make the list clickable
+      $("li").click(function(){
+        $(this).toggleClass("cool");
+        $(this).toggleClass("hot");
+      });
+    });
 
     //save the list to database
     $("#save").click(function(){
       //testing if the database is connected
+      // clear the database before saving
+      db.collection("shoppinglist").get().then((querySnapshot)=>{
+        querySnapshot.forEach((doc)=>{
+          doc.ref.delete();
+        })
+      })
+      $('li').each(function(){
+        let value = $(this).text();
+        console.log("Saving " + value);
+        db.collection("shoppinglist").add({item:value});
+      })
       db.collection("shoppinglist").add({item:"apple"});
     });
   </script>
